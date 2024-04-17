@@ -131,7 +131,7 @@ architecture top_basys3_arch of top_basys3 is
             
                 end component TDM4; 
      
-    signal w_clk, w_clk_fast, w_stop, w_up_down : std_logic := '0';
+    signal w_clk, w_clk_fast, w_stop, w_up_down, w_reset_clk, w_reset_fsm, w_reset_tdm: std_logic := '0';
     signal w_floor,w_tdm : std_logic_vector(3 downto 0) := (others => '0');     
     signal w_seg : std_logic_vector (6 downto 0) := "0000000";
     signal w_tens, w_ones, w_D1, w_D0, f_data: std_logic_vector(3 downto 0);
@@ -139,11 +139,15 @@ architecture top_basys3_arch of top_basys3 is
     
 begin
 	-- PORT MAPS ----------------------------------------
+	w_reset_clk <= btnL or btnU;
+	w_reset_tdm <= btnL or btnU;
+	w_reset_fsm <= btnR or btnU;
+	
 	clock_divider_inst : clock_divider 
         generic map ( k_DIV => 100000000)
         port map (
             i_clk   => clk,
-            i_reset => btnL or btnU,
+            i_reset => w_reset_clk,
             o_clk    => w_clk
         );
 	
@@ -151,13 +155,13 @@ begin
                 generic map ( k_DIV => 500)
                 port map (
                     i_clk   => clk,
-                    i_reset => btnL or btnU,
+                    i_reset => w_reset_tdm,
                     o_clk    => w_clk_fast
                 );
                 
 	elevator_controller_fsm_inst : elevator_controller_fsm port map (
                 i_clk     => w_clk,
-                i_reset   => btnR or btnU,
+                i_reset   => w_reset_fsm,
                 i_stop    => w_stop,
                 i_up_down => w_up_down,
                 o_floor   => w_floor
